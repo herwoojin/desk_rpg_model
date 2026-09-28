@@ -122,12 +122,19 @@ function CharactersPageInner() {
 
   useEffect(() => {
     fetch("/api/characters")
-      .then((res) => res.json())
-      .then((data) => {
+      .then(async (res) => {
+        if (res.status === 401) {
+          router.push("/auth");
+          return;
+        }
+        const data = await res.json();
         setCharacters(data.characters || []);
         setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
       });
-  }, []);
+  }, [router]);
 
   // When user selects a character: if joinChannel is set, go directly to game
   const handleSelectCharacter = (charId: string) => {

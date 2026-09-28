@@ -9,6 +9,21 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "50mb",
     },
   },
+  async headers() {
+    return [
+      {
+        // Firebase Google Sign-In popup requires same-origin-allow-popups
+        // "same-origin" (default) blocks window.opener access from the OAuth popup
+        source: "/:path*",
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -1,5 +1,4 @@
-import { db, jsonForDb, isPostgres } from "@/db";
-import { characters } from "@/db";
+import { db, jsonForDb, isPostgres, users, characters } from "@/db";
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { validateAppearance } from "@/lib/lpc-registry";
@@ -18,6 +17,21 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    const [userExists] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!userExists) {
+      const response = NextResponse.json(
+        { errorCode: "unauthorized", error: "User does not exist" },
+        { status: 401 },
+      );
+      response.cookies.set("token", "", { maxAge: 0, path: "/" });
+      return response;
+    }
+
     const result = await db
       .select()
       .from(characters)
@@ -45,6 +59,21 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const [userExists] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!userExists) {
+      const response = NextResponse.json(
+        { errorCode: "unauthorized", error: "User does not exist" },
+        { status: 401 },
+      );
+      response.cookies.set("token", "", { maxAge: 0, path: "/" });
+      return response;
+    }
+
     const body = await req.json();
     const { name, appearance } = body;
 
@@ -101,3 +130,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
